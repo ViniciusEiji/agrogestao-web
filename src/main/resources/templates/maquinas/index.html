@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroGestão Web - Gestão de Maquinário</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<!-- CABEÇALHO -->
+<header class="site-header">
+    <div class="header-container">
+        <a th:href="@{/safras}" class="brand">
+            <div class="brand-logo">
+                <i class="fa-solid fa-wheat-awn"></i>
+            </div>
+            <div>
+                <span class="brand-title">AgroGestão Web</span>
+                <span class="brand-subtitle">Módulo de Gestão Integrada</span>
+            </div>
+        </a>
+
+        <div class="user-profile">
+            <div class="avatar">GA</div>
+            <div class="user-info">
+                <div class="user-name">Gestor Agrícola</div>
+                <div class="user-role">Fazenda Vista Alegre</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABAS DE NAVEGAÇÃO DOS MÓDULOS -->
+    <nav class="nav-bar">
+        <div class="nav-tabs">
+            <a th:href="@{/safras}" class="nav-tab">
+                <i class="fa-solid fa-seedling"></i> Gestão de Safras
+            </a>
+            <a th:href="@{/fazendas}" class="nav-tab">
+                <i class="fa-solid fa-tractor"></i> Fazendas & Terras
+            </a>
+            <a th:href="@{/maquinas}" class="nav-tab active">
+                <i class="fa-solid fa-gears"></i> Maquinário
+            </a>
+            <a th:href="@{/vendas}" class="nav-tab">
+                <i class="fa-solid fa-sack-dollar"></i> Vendas Agrícolas
+            </a>
+        </div>
+    </nav>
+</header>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<main class="main-container">
+
+    <!-- FEEDBACK DE SUCESSO / ERRO -->
+    <div th:if="${mensagemSucesso}" class="toast-alert show" style="position: static; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: #e8f5e9; border: 1px solid #81c784; color: #2e7d32; border-radius: 8px; padding: 1rem 1.25rem;">
+        <i class="fa-solid fa-circle-check" style="font-size: 1.3rem;"></i>
+        <span th:text="${mensagemSucesso}">Operação realizada com sucesso!</span>
+    </div>
+
+    <div th:if="${mensagemErro}" class="toast-alert show" style="position: static; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: #ffebee; border: 1px solid #e57373; color: #c62828; border-radius: 8px; padding: 1rem 1.25rem;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.3rem;"></i>
+        <span th:text="${mensagemErro}">Erro ao processar operação.</span>
+    </div>
+
+    <!-- METRICAS KPI DINÂMICAS -->
+    <section class="metrics-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fa-solid fa-tractor"></i>
+            </div>
+            <div>
+                <div class="kpi-title">Frota de Máquinas</div>
+                <div class="kpi-value" th:text="${kpiTotalMaquinas} + ' Unidades'">0 Unidades</div>
+                <div class="kpi-subtext">Equipamentos ativos</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fa-solid fa-stopwatch"></i>
+            </div>
+            <div>
+                <div class="kpi-title">Horas de Operação</div>
+                <div class="kpi-value" th:text="${kpiTotalHorasUso} + ' h'">0.0 h</div>
+                <div class="kpi-subtext">Tempo total de uso da frota</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PAINEL DUPLO: FORMULÁRIO + TABELA -->
+    <div class="content-grid">
+
+        <!-- FORMULÁRIO -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i th:class="${editando} ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-file-circle-plus'"></i>
+                    <span th:text="${editando} ? 'Editar Máquina #' + ${maquina.id} : 'Cadastrar Máquina'">Cadastrar Máquina</span>
+                </h2>
+                <a th:if="${editando}" th:href="@{/maquinas}" class="badge badge-info" style="text-decoration: none;">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/maquinas/salvar}" th:object="${maquina}" method="post">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="form-group">
+                        <label class="form-label" for="fazenda">Fazenda Alocada</label>
+                        <select class="form-select" th:field="*{fazenda}" id="fazenda" required>
+                            <option value="">Selecione uma Fazenda...</option>
+                            <option th:each="f : ${fazendas}"
+                                    th:value="${f.id}"
+                                    th:text="${f.nome} + ' (' + ${f.uf} + ')'">
+                                Fazenda Vista Alegre (MG)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="tipo">Tipo / Modelo do Maquinário</label>
+                        <input type="text" class="form-input" th:field="*{tipo}" id="tipo" placeholder="Ex: Trator John Deere 8R" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="anoFabricacao">Ano de Fabricação</label>
+                            <input type="number" class="form-input" th:field="*{anoFabricacao}" id="anoFabricacao" placeholder="Ex: 2022">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="horasUso">Horas de Uso (Horímetro)</label>
+                            <input type="number" step="0.1" class="form-input" th:field="*{horasUso}" id="horasUso" placeholder="Ex: 1450.5" required>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span th:text="${editando} ? 'Atualizar Máquina' : 'Salvar Máquina'">Salvar Máquina</span>
+                        </button>
+                        <a th:href="@{/maquinas}" class="btn btn-outline" style="padding: 0.625rem 0.85rem; display: flex; align-items: center;" title="Limpar">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- TABELA -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-list-check"></i> Máquinas Cadastradas
+                </h2>
+                <span class="badge badge-success" th:text="${#lists.size(maquinas)} + ' Registros'">0 Registros</span>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo / Modelo</th>
+                            <th>Fazenda</th>
+                            <th>Ano</th>
+                            <th>Horas de Uso</th>
+                            <th style="text-align: center;">Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="m : ${maquinas}">
+                            <td th:text="'#MAQ-' + ${m.id}">#MAQ-1</td>
+                            <td><strong th:text="${m.tipo}">Trator John Deere</strong></td>
+                            <td th:text="${m.fazenda?.nome}">Fazenda Vista Alegre</td>
+                            <td th:text="${m.anoFabricacao}">2022</td>
+                            <td th:text="${m.horasUso} + ' h'">1.450 h</td>
+                            <td style="text-align: center;">
+                                <div style="display: inline-flex; gap: 0.35rem; align-items: center;">
+                                    <a th:href="@{/maquinas/editar/{id}(id=${m.id})}" class="btn btn-outline btn-sm btn-icon" title="Editar">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form th:action="@{/maquinas/excluir/{id}(id=${m.id})}" method="post" style="display: inline;" onsubmit="return confirm('Deseja excluir esta máquina?');">
+                                        <button type="submit" class="btn btn-outline btn-sm btn-icon" style="color: #a83232; border-color: #a83232;" title="Excluir">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(maquinas)}">
+                            <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">
+                                Nenhuma máquina cadastrada. Utilize o formulário para adicionar à frota.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <div class="brand" style="margin-bottom: 0.5rem;">
+                <div class="brand-logo" style="width: 32px; height: 32px; font-size: 1rem;">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <span class="brand-title" style="font-size: 1.1rem;">AgroGestão Web</span>
+            </div>
+            <p>Módulo de Gestão de Maquinário e Frota Rural.</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

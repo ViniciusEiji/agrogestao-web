@@ -1,12 +1,7 @@
 package br.com.agroehtop.top.config;
 
-import br.com.agroehtop.top.model.CulturaAgricola;
-import br.com.agroehtop.top.model.Fazenda;
-import br.com.agroehtop.top.model.Safra;
-import br.com.agroehtop.top.model.StatusSafra;
-import br.com.agroehtop.top.repository.CulturaAgricolaRepository;
-import br.com.agroehtop.top.repository.FazendaRepository;
-import br.com.agroehtop.top.repository.SafraRepository;
+import br.com.agroehtop.top.model.*;
+import br.com.agroehtop.top.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +16,10 @@ public class CargaInicialDadosConfig {
     public CommandLineRunner carregarDadosIniciais(
             FazendaRepository fazendaRepo,
             CulturaAgricolaRepository culturaRepo,
-            SafraRepository safraRepo) {
+            SafraRepository safraRepo,
+            MaquinaRepository maquinaRepo,
+            ClienteRepository clienteRepo,
+            VendaRepository vendaRepo) {
 
         return args -> {
             if (fazendaRepo.count() == 0) {
@@ -34,8 +32,9 @@ public class CargaInicialDadosConfig {
                 CulturaAgricola c3 = culturaRepo.save(new CulturaAgricola("Café", "Sacas / ha"));
                 CulturaAgricola c4 = culturaRepo.save(new CulturaAgricola("Algodão", "Tons / ha"));
 
+                Safra s1 = null;
                 if (safraRepo.count() == 0) {
-                    safraRepo.save(new Safra(f1, c1, LocalDate.now().minusMonths(2), null,
+                    s1 = safraRepo.save(new Safra(f1, c1, LocalDate.now().minusMonths(2), null,
                             new BigDecimal("450.00"), new BigDecimal("65.00"), new BigDecimal("185000.00"), StatusSafra.EM_ANDAMENTO));
 
                     safraRepo.save(new Safra(f2, c2, LocalDate.now().minusMonths(1), null,
@@ -46,6 +45,29 @@ public class CargaInicialDadosConfig {
 
                     safraRepo.save(new Safra(f1, c4, LocalDate.now().minusMonths(8), LocalDate.now().minusMonths(2),
                             new BigDecimal("500.00"), new BigDecimal("120.00"), new BigDecimal("320000.00"), StatusSafra.CONCLUIDA));
+                }
+
+                if (maquinaRepo.count() == 0) {
+                    Maquina m1 = new Maquina("Trator John Deere 8R", 2022, 1450.5);
+                    m1.setFazenda(f1);
+                    maquinaRepo.save(m1);
+
+                    Maquina m2 = new Maquina("Colheitadeira Case IH 8250", 2023, 820.0);
+                    m2.setFazenda(f2);
+                    maquinaRepo.save(m2);
+
+                    Maquina m3 = new Maquina("Pulverizador Jacto Uniport 3030", 2021, 2100.0);
+                    m3.setFazenda(f3);
+                    maquinaRepo.save(m3);
+                }
+
+                if (clienteRepo.count() == 0) {
+                    Cliente cli1 = clienteRepo.save(new Cliente("Cooperativa Agropecuária Regional", "12.345.678/0001-90"));
+                    Cliente cli2 = clienteRepo.save(new Cliente("Exportadora Grãos do Brasil S.A.", "98.765.432/0001-10"));
+
+                    if (vendaRepo.count() == 0 && s1 != null) {
+                        vendaRepo.save(new Venda(s1, cli1, LocalDate.now().minusWeeks(1), new BigDecimal("5000.00"), new BigDecimal("128.50")));
+                    }
                 }
             }
         };
