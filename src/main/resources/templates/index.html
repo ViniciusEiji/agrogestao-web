@@ -1,25 +1,24 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgroGestão Web - Sistema Integrado de Gestão Agropecuária</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" th:href="@{/style.css}" href="style.css">
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 </head>
 <body>
 
 <!-- CABEÇALHO -->
 <header class="site-header">
     <div class="header-container">
-        <a href="#" class="brand">
+        <a th:href="@{/safras}" class="brand">
             <div class="brand-logo">
                 <i class="fa-solid fa-wheat-awn"></i>
             </div>
@@ -41,22 +40,22 @@
     <!-- ABAS DE NAVEGAÇÃO DOS MÓDULOS -->
     <nav class="nav-bar">
         <div class="nav-tabs">
-            <a class="nav-tab active" data-tab="safras">
+            <a th:href="@{/safras}" class="nav-tab active">
                 <i class="fa-solid fa-seedling"></i> Gestão de Safras
             </a>
-            <a class="nav-tab" data-tab="fazendas">
+            <a href="#" class="nav-tab">
                 <i class="fa-solid fa-tractor"></i> Fazendas & Terras
             </a>
-            <a class="nav-tab" data-tab="pecuaria">
+            <a href="#" class="nav-tab">
                 <i class="fa-solid fa-cow"></i> Pecuária
             </a>
-            <a class="nav-tab" data-tab="maquinas">
+            <a href="#" class="nav-tab">
                 <i class="fa-solid fa-gears"></i> Maquinário
             </a>
-            <a class="nav-tab" data-tab="clima">
+            <a href="#" class="nav-tab">
                 <i class="fa-solid fa-cloud-sun-rain"></i> Clima & Meteorologia
             </a>
-            <a class="nav-tab" data-tab="vendas">
+            <a href="#" class="nav-tab">
                 <i class="fa-solid fa-sack-dollar"></i> Vendas Agrícolas
             </a>
         </div>
@@ -66,7 +65,18 @@
 <!-- CONTEÚDO PRINCIPAL -->
 <main class="main-container">
 
-    <!-- METRICAS KPI -->
+    <!-- FEEDBACK DE SUCESSO / ERRO -->
+    <div th:if="${mensagemSucesso}" class="toast-alert show" style="position: static; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: #e8f5e9; border: 1px solid #81c784; color: #2e7d32; border-radius: 8px; padding: 1rem 1.25rem;">
+        <i class="fa-solid fa-circle-check" style="font-size: 1.3rem;"></i>
+        <span th:text="${mensagemSucesso}">Operação realizada com sucesso!</span>
+    </div>
+
+    <div th:if="${mensagemErro}" class="toast-alert show" style="position: static; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: #ffebee; border: 1px solid #e57373; color: #c62828; border-radius: 8px; padding: 1rem 1.25rem;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.3rem;"></i>
+        <span th:text="${mensagemErro}">Erro ao processar operação.</span>
+    </div>
+
+    <!-- METRICAS KPI DINÂMICAS -->
     <section class="metrics-grid">
         <div class="kpi-card">
             <div class="kpi-icon">
@@ -74,8 +84,8 @@
             </div>
             <div>
                 <div class="kpi-title">Área Total Plantada</div>
-                <div class="kpi-value" id="total-area">1.450 ha</div>
-                <div class="kpi-subtext"><i class="fa-solid fa-arrow-up"></i> +12% em relação à safra anterior</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(kpiAreaTotal, 1, 'POINT', 2, 'COMMA')} + ' ha'">1.450 ha</div>
+                <div class="kpi-subtext"><i class="fa-solid fa-database"></i> Calculado das Safras persistidas</div>
             </div>
         </div>
 
@@ -84,159 +94,159 @@
                 <i class="fa-solid fa-box-archive"></i>
             </div>
             <div>
-                <div class="kpi-title">Safras Ativas</div>
-                <div class="kpi-value" id="active-safras">4 Ciclos</div>
-                <div class="kpi-subtext">Soja, Milho, Café e Algodão</div>
+                <div class="kpi-title">Safras Ativas / Planejadas</div>
+                <div class="kpi-value" th:text="${kpiSafrasAtivas} + ' Ciclos'">4 Ciclos</div>
+                <div class="kpi-subtext">Monitoradas no banco relacional</div>
             </div>
         </div>
 
         <div class="kpi-card">
             <div class="kpi-icon">
-                <i class="fa-solid fa-cow"></i>
+                <i class="fa-solid fa-wheat-awn"></i>
             </div>
             <div>
-                <div class="kpi-title">Rebanho Pecuário</div>
-                <div class="kpi-value">850 Cab.</div>
-                <div class="kpi-subtext">Produção: 1.200 L/dia</div>
+                <div class="kpi-title">Total de Registros</div>
+                <div class="kpi-value" th:text="${kpiTotalRegistros} + ' Safras'">4 Safras</div>
+                <div class="kpi-subtext">Base de dados H2 persistente</div>
             </div>
         </div>
 
         <div class="kpi-card">
             <div class="kpi-icon">
-                <i class="fa-solid fa-hand-holding-dollar"></i>
+                <i class="fa-solid fa-shield-halved"></i>
             </div>
             <div>
-                <div class="kpi-title">Receita Estimada</div>
-                <div class="kpi-value">R$ 3,82 M</div>
-                <div class="kpi-subtext">Canal de Venda: Mercado Interno</div>
+                <div class="kpi-title">Regras de Negócio</div>
+                <div class="kpi-value" style="font-size: 1.25rem; color: var(--color-primary);">Ativas</div>
+                <div class="kpi-subtext">Validações temporais e de status</div>
             </div>
         </div>
     </section>
 
-    <!-- MOSTRADOR DE ESTILOS DE BOTÕES PARA TESTE -->
-    <div class="card" style="margin-bottom: 1.75rem;">
-        <div class="card-header">
-            <h2 class="card-title"><i class="fa-solid fa-palette"></i> Teste de Estilos dos Botões</h2>
-            <span class="badge badge-info">Paleta Color Hunt</span>
-        </div>
-        <div class="card-body">
-            <p style="font-size: 0.88rem; color: var(--color-text-muted); margin-bottom: 0.85rem;">
-                Clique nos botões abaixo para testar as variantes interativas estilizadas em CSS conforme a especificação.
-            </p>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="showToast('Botão Principal (Primary) clicado!')">
-                    <i class="fa-solid fa-plus"></i> Botão Primary (#1E3B2F)
-                </button>
-
-                <button class="btn btn-secondary" onclick="showToast('Botão Secundário (Secondary) clicado!')">
-                    <i class="fa-solid fa-pen-to-square"></i> Botão Secondary (#7F8C6A)
-                </button>
-
-                <button class="btn btn-outline" onclick="showToast('Botão Contornado (Outline) clicado!')">
-                    <i class="fa-solid fa-filter"></i> Botão Outline (#C8B48A)
-                </button>
-
-                <button class="btn btn-primary disabled" disabled>
-                    <i class="fa-solid fa-ban"></i> Desabilitado
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PAINEL DUPLO: FORMULÁRIO + TABELA -->
+    <!-- PAINEL DUPLO: FORMULÁRIO THYMELEAF + TABELA DINÂMICA -->
     <div class="content-grid">
 
-        <!-- COLUNA 1: FORMULÁRIO DE CADASTRO -->
+        <!-- COLUNA 1: FORMULÁRIO DE CADASTRO / EDIÇÃO -->
         <section class="card">
             <div class="card-header">
                 <h2 class="card-title">
-                    <i class="fa-solid fa-file-circle-plus"></i> Cadastrar Safra
+                    <i th:class="${editando} ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-file-circle-plus'"></i>
+                    <span th:text="${editando} ? 'Editar Safra #' + ${safra.id} : 'Cadastrar Safra'">Cadastrar Safra</span>
                 </h2>
+                <a th:if="${editando}" th:href="@{/safras}" class="badge badge-info" style="text-decoration: none;">
+                    <i class="fa-solid fa-xmark"></i> Cancelar Edição
+                </a>
             </div>
             <div class="card-body">
-                <form id="safra-form" onsubmit="handleFormSubmit(event)">
+                <form th:action="@{/safras/salvar}" th:object="${safra}" method="post">
+                    <input type="hidden" th:field="*{id}">
 
                     <div class="form-group">
-                        <label class="form-label" for="fazenda_select">Fazenda de Destino</label>
-                        <select class="form-select" id="fazenda_select" required>
+                        <label class="form-label" for="fazenda">Fazenda de Destino</label>
+                        <select class="form-select" th:field="*{fazenda}" id="fazenda" required>
                             <option value="">Selecione uma Fazenda...</option>
-                            <option value="Fazenda Vista Alegre">Fazenda Vista Alegre (MG)</option>
-                            <option value="Fazenda Santa Luzia">Fazenda Santa Luzia (SP)</option>
-                            <option value="Fazenda Terra Negra">Fazenda Terra Negra (GO)</option>
+                            <option th:each="f : ${fazendas}"
+                                    th:value="${f.id}"
+                                    th:text="${f.nome} + ' (' + ${f.uf} + ' - ' + ${f.municipio} + ')'">
+                                Fazenda Vista Alegre (MG)
+                            </option>
                         </select>
+                        <div th:if="${#fields.hasErrors('fazenda')}" class="text-danger" style="color: #c62828; font-size: 0.82rem; margin-top: 0.25rem;" th:errors="*{fazenda}"></div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="cultura_input">Cultura Agrícola</label>
-                        <select class="form-select" id="cultura_input" required>
-                            <option value="Soja">Soja (Sacas / ha)</option>
-                            <option value="Milho">Milho (Sacas / ha)</option>
-                            <option value="Café">Café (Sacas / ha)</option>
-                            <option value="Algodão">Algodão (Tons / ha)</option>
+                        <label class="form-label" for="cultura">Cultura Agrícola</label>
+                        <select class="form-select" th:field="*{cultura}" id="cultura" required>
+                            <option value="">Selecione uma Cultura...</option>
+                            <option th:each="c : ${culturas}"
+                                    th:value="${c.id}"
+                                    th:text="${c.nome} + ' (' + ${c.unidadeMedida} + ')'">
+                                Soja (Sacas / ha)
+                            </option>
                         </select>
+                        <div th:if="${#fields.hasErrors('cultura')}" class="text-danger" style="color: #c62828; font-size: 0.82rem; margin-top: 0.25rem;" th:errors="*{cultura}"></div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label" for="area_input">Área (ha)</label>
-                            <input type="number" step="0.1" class="form-input" id="area_input" placeholder="Ex: 250" required>
+                            <label class="form-label" for="areaPlantada">Área Plantada (ha)</label>
+                            <input type="number" step="0.01" class="form-input" th:field="*{areaPlantada}" id="areaPlantada" placeholder="Ex: 250.00" required>
+                            <div th:if="${#fields.hasErrors('areaPlantada')}" style="color: #c62828; font-size: 0.82rem; margin-top: 0.25rem;" th:errors="*{areaPlantada}"></div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="produtividade_input">Meta (sacas/ha)</label>
-                            <input type="number" class="form-input" id="produtividade_input" placeholder="Ex: 65" required>
+                            <label class="form-label" for="produtividade">Produtividade Meta/Real</label>
+                            <input type="number" step="0.01" class="form-input" th:field="*{produtividade}" id="produtividade" placeholder="Ex: 65.00">
+                            <div th:if="${#fields.hasErrors('produtividade')}" style="color: #c62828; font-size: 0.82rem; margin-top: 0.25rem;" th:errors="*{produtividade}"></div>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="plantio_date">Data de Plantio</label>
-                        <input type="date" class="form-input" id="plantio_date" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="dataPlantio">Data de Plantio</label>
+                            <input type="date" class="form-input" th:field="*{dataPlantio}" id="dataPlantio">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="dataColheita">Data de Colheita</label>
+                            <input type="date" class="form-input" th:field="*{dataColheita}" id="dataColheita">
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="status_select">Status do Ciclo</label>
-                        <select class="form-select" id="status_select" required>
-                            <option value="Em Andamento">Em Andamento</option>
-                            <option value="Planejada">Planejada</option>
-                            <option value="Concluída">Concluída</option>
-                        </select>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="custoProducao">Custo de Produção (R$)</label>
+                            <input type="number" step="0.01" class="form-input" th:field="*{custoProducao}" id="custoProducao" placeholder="Ex: 150000.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="status">Status do Ciclo</label>
+                            <select class="form-select" th:field="*{status}" id="status" required>
+                                <option th:each="st : ${statusList}"
+                                        th:value="${st}"
+                                        th:text="${st.descricao}">
+                                    Planejada
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('status')}" style="color: #c62828; font-size: 0.82rem; margin-top: 0.25rem;" th:errors="*{status}"></div>
+                        </div>
                     </div>
 
                     <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
                         <button type="submit" class="btn btn-primary" style="flex: 1;">
-                            <i class="fa-solid fa-floppy-disk"></i> Salvar Safra
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span th:text="${editando} ? 'Atualizar Safra' : 'Salvar no Banco (H2)'">Salvar Safra</span>
                         </button>
-                        <button type="reset" class="btn btn-outline" style="padding: 0.625rem 0.85rem;" title="Limpar">
+                        <a th:href="@{/safras}" class="btn btn-outline" style="padding: 0.625rem 0.85rem; display: flex; align-items: center;" title="Limpar / Novo">
                             <i class="fa-solid fa-rotate-left"></i>
-                        </button>
+                        </a>
                     </div>
-
                 </form>
             </div>
         </section>
 
-        <!-- COLUNA 2: TABELA DE DADOS AGRICOLAS -->
+        <!-- COLUNA 2: TABELA DE DADOS AGRICOLAS RENDERIZADA PELO THYMELEAF -->
         <section class="card">
             <div class="card-header">
                 <h2 class="card-title">
                     <i class="fa-solid fa-list-check"></i> Safras Cadastradas
                 </h2>
-                <span class="badge badge-success" id="table-counter">4 Registros</span>
+                <span class="badge badge-success" th:text="${#lists.size(safras)} + ' Registros'">4 Registros</span>
             </div>
             <div class="card-body">
 
-                <!-- BARRA DE PESQUISA E FILTROS -->
+                <!-- BARRA DE PESQUISA EM TEMPO REAL -->
                 <div class="table-toolbar">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="search-input" class="form-input" placeholder="Buscar por fazenda ou cultura..." onkeyup="filterTable()">
+                        <input type="text" id="search-input" class="form-input" placeholder="Filtrar por fazenda ou cultura..." onkeyup="filterTable()">
                     </div>
-                    <button class="btn btn-outline btn-sm" onclick="resetFilters()">
-                        <i class="fa-solid fa-arrow-rotate-right"></i> Atualizar
-                    </button>
+                    <a th:href="@{/safras}" class="btn btn-outline btn-sm">
+                        <i class="fa-solid fa-arrow-rotate-right"></i> Recarregar
+                    </a>
                 </div>
 
-                <!-- TABELA COM ZEBRADO CSS -->
+                <!-- TABELA PERSISTIDA -->
                 <div class="table-container">
                     <table class="table" id="safras-table">
                         <thead>
@@ -251,75 +261,42 @@
                         </tr>
                         </thead>
                         <tbody id="table-body">
-                        <!-- LINHA 1 -->
-                        <tr>
-                            <td>#SAF-101</td>
-                            <td><strong>Fazenda Vista Alegre</strong></td>
-                            <td>Soja</td>
-                            <td>450,0</td>
-                            <td>12/10/2025</td>
-                            <td><span class="badge badge-success"><i class="fa-solid fa-spinner fa-spin"></i> Em Andamento</span></td>
+                        <tr th:each="s : ${safras}">
+                            <td th:text="'#SAF-' + ${s.id}">#SAF-1</td>
+                            <td><strong th:text="${s.fazenda?.nome}">Fazenda Vista Alegre</strong></td>
+                            <td th:text="${s.cultura?.nome}">Soja</td>
+                            <td th:text="${#numbers.formatDecimal(s.areaPlantada, 1, 'POINT', 2, 'COMMA')}">450,00</td>
+                            <td th:text="${s.dataPlantio != null ? #temporals.format(s.dataPlantio, 'dd/MM/yyyy') : '-'}">12/10/2025</td>
+                            <td>
+                                <span th:if="${s.status.name() == 'EM_ANDAMENTO'}" class="badge badge-success">
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Em Andamento
+                                </span>
+                                <span th:if="${s.status.name() == 'PLANEJADA'}" class="badge badge-warning">
+                                    <i class="fa-solid fa-clock"></i> Planejada
+                                </span>
+                                <span th:if="${s.status.name() == 'CONCLUIDA'}" class="badge badge-info">
+                                    <i class="fa-solid fa-circle-check"></i> Concluída
+                                </span>
+                                <span th:if="${s.status.name() == 'CANCELADA'}" class="badge" style="background: #e2e8f0; color: #475569;">
+                                    <i class="fa-solid fa-ban"></i> Cancelada
+                                </span>
+                            </td>
                             <td style="text-align: center;">
-                                <button class="btn btn-outline btn-sm btn-icon" title="Editar" onclick="showToast('Editar Safra #101')">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button class="btn btn-outline btn-sm btn-icon" style="color: #a83232; border-color: #a83232;" title="Excluir" onclick="deleteRow(this)">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <div style="display: inline-flex; gap: 0.35rem; align-items: center;">
+                                    <a th:href="@{/safras/editar/{id}(id=${s.id})}" class="btn btn-outline btn-sm btn-icon" title="Editar">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form th:action="@{/safras/excluir/{id}(id=${s.id})}" method="post" style="display: inline;" onsubmit="return confirm('Deseja realmente excluir esta safra persistida?');">
+                                        <button type="submit" class="btn btn-outline btn-sm btn-icon" style="color: #a83232; border-color: #a83232;" title="Excluir">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
-
-                        <!-- LINHA 2 -->
-                        <tr>
-                            <td>#SAF-102</td>
-                            <td><strong>Fazenda Santa Luzia</strong></td>
-                            <td>Milho</td>
-                            <td>300,0</td>
-                            <td>05/11/2025</td>
-                            <td><span class="badge badge-success"><i class="fa-solid fa-spinner fa-spin"></i> Em Andamento</span></td>
-                            <td style="text-align: center;">
-                                <button class="btn btn-outline btn-sm btn-icon" title="Editar" onclick="showToast('Editar Safra #102')">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button class="btn btn-outline btn-sm btn-icon" style="color: #a83232; border-color: #a83232;" title="Excluir" onclick="deleteRow(this)">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                        <!-- LINHA 3 -->
-                        <tr>
-                            <td>#SAF-103</td>
-                            <td><strong>Fazenda Terra Negra</strong></td>
-                            <td>Café</td>
-                            <td>200,0</td>
-                            <td>15/08/2025</td>
-                            <td><span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Planejada</span></td>
-                            <td style="text-align: center;">
-                                <button class="btn btn-outline btn-sm btn-icon" title="Editar" onclick="showToast('Editar Safra #103')">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button class="btn btn-outline btn-sm btn-icon" style="color: #a83232; border-color: #a83232;" title="Excluir" onclick="deleteRow(this)">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                        <!-- LINHA 4 -->
-                        <tr>
-                            <td>#SAF-104</td>
-                            <td><strong>Fazenda Vista Alegre</strong></td>
-                            <td>Algodão</td>
-                            <td>500,0</td>
-                            <td>01/04/2025</td>
-                            <td><span class="badge badge-info"><i class="fa-solid fa-circle-check"></i> Concluída</span></td>
-                            <td style="text-align: center;">
-                                <button class="btn btn-outline btn-sm btn-icon" title="Editar" onclick="showToast('Editar Safra #104')">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button class="btn btn-outline btn-sm btn-icon" style="color: #a83232; border-color: #a83232;" title="Excluir" onclick="deleteRow(this)">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                        <tr th:if="${#lists.isEmpty(safras)}">
+                            <td colspan="7" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">
+                                Nenhuma safra cadastrada no banco de dados. Utilize o formulário ao lado para cadastrar.
                             </td>
                         </tr>
                         </tbody>
@@ -332,12 +309,6 @@
     </div>
 </main>
 
-<!-- BANNER NOTIFICAÇÃO (TOAST) -->
-<div id="toast" class="toast-alert">
-    <i class="fa-solid fa-circle-check" style="color: var(--color-accent); font-size: 1.2rem;"></i>
-    <span id="toast-message">Operação realizada com sucesso!</span>
-</div>
-
 <!-- RODAPÉ INSTITUCIONAL -->
 <footer class="site-footer">
     <div class="footer-container">
@@ -348,14 +319,14 @@
                 </div>
                 <span class="brand-title" style="font-size: 1.1rem;">AgroGestão Web</span>
             </div>
-            <p>Sistema completo de gestão rural e monitoramento agropecuário orientado a objetos (JPA/Hibernate).</p>
+            <p>Sistema completo de gestão rural e modernização de sistema legado orientado a objetos com Spring Boot e Thymeleaf.</p>
         </div>
 
         <div>
             <h3 class="footer-title">Módulos do Sistema</h3>
             <ul class="footer-links">
                 <li><a href="#"><i class="fa-solid fa-chevron-right" style="font-size: 0.6rem;"></i> Gestão de Fazenda & Terras</a></li>
-                <li><a href="#"><i class="fa-solid fa-chevron-right" style="font-size: 0.6rem;"></i> Controle de Safras e Culturas</a></li>
+                <li><a th:href="@{/safras}"><i class="fa-solid fa-chevron-right" style="font-size: 0.6rem;"></i> Controle de Safras e Culturas</a></li>
                 <li><a href="#"><i class="fa-solid fa-chevron-right" style="font-size: 0.6rem;"></i> Gestão Comercial e Vendas</a></li>
                 <li><a href="#"><i class="fa-solid fa-chevron-right" style="font-size: 0.6rem;"></i> Frota & Maquinário Agrícola</a></li>
             </ul>
@@ -395,87 +366,8 @@
     </div>
 </footer>
 
-<!-- LÓGICA DE INTERAÇÃO JAVASCRIPT -->
+<!-- SCRIPT DE FILTRAGEM LOCAL DA TABELA -->
 <script>
-    // Data padrão para o campo de data
-    document.getElementById('plantio_date').valueAsDate = new Date();
-
-    // Contador de IDs de teste
-    let safraIdCounter = 105;
-
-    // Submissão dinâmica do formulário
-    function handleFormSubmit(event) {
-      event.preventDefault();
-
-      const fazenda = document.getElementById('fazenda_select').value;
-      const cultura = document.getElementById('cultura_input').value;
-      const area = parseFloat(document.getElementById('area_input').value).toFixed(1);
-      const rawDate = document.getElementById('plantio_date').value;
-      const status = document.getElementById('status_select').value;
-
-      // Formata a data para DD/MM/AAAA
-      const dateParts = rawDate.split('-');
-      const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-
-      // Badge HTML conforme o status selecionado
-      let badgeHtml = '';
-      if (status === 'Em Andamento') {
-        badgeHtml = `<span class="badge badge-success"><i class="fa-solid fa-spinner fa-spin"></i> Em Andamento</span>`;
-      } else if (status === 'Planejada') {
-        badgeHtml = `<span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Planejada</span>`;
-      } else {
-        badgeHtml = `<span class="badge badge-info"><i class="fa-solid fa-circle-check"></i> Concluída</span>`;
-      }
-
-      // Adiciona a nova linha na tabela
-      const tbody = document.getElementById('table-body');
-      const newRow = document.createElement('tr');
-      newRow.innerHTML = `
-        <td>#SAF-${safraIdCounter++}</td>
-        <td><strong>${fazenda}</strong></td>
-        <td>${cultura}</td>
-        <td>${area.replace('.', ',')}</td>
-        <td>${formattedDate}</td>
-        <td>${badgeHtml}</td>
-        <td style="text-align: center;">
-          <button class="btn btn-outline btn-sm btn-icon" title="Editar" onclick="showToast('Editar Safra recém-criada')">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn btn-outline btn-sm btn-icon" style="color: #a83232; border-color: #a83232;" title="Excluir" onclick="deleteRow(this)">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </td>
-      `;
-
-      tbody.insertBefore(newRow, tbody.firstChild);
-
-      // Limpa formulário e exibe feedback
-      document.getElementById('safra-form').reset();
-      document.getElementById('plantio_date').valueAsDate = new Date();
-
-      updateCounter();
-      showToast(`Safra de ${cultura} cadastrada com sucesso!`);
-    }
-
-    // Exclusão de linha
-    function deleteRow(button) {
-      const row = button.closest('tr');
-      row.style.opacity = '0';
-      row.style.transition = 'opacity 0.3s';
-      setTimeout(() => {
-        row.remove();
-        updateCounter();
-        showToast('Registro removido com sucesso.');
-      }, 300);
-    }
-
-    // Atualiza contador de registros
-    function updateCounter() {
-      const rowCount = document.querySelectorAll('#table-body tr').length;
-      document.getElementById('table-counter').innerText = `${rowCount} Registros`;
-    }
-
-    // Filtro de busca na tabela em tempo real
     function filterTable() {
       const query = document.getElementById('search-input').value.toLowerCase();
       const rows = document.querySelectorAll('#table-body tr');
@@ -485,35 +377,6 @@
         row.style.display = text.includes(query) ? '' : 'none';
       });
     }
-
-    function resetFilters() {
-      document.getElementById('search-input').value = '';
-      filterTable();
-      showToast('Filtros atualizados.');
-    }
-
-    // Exibe notificação Toast
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-message');
-
-      toastMsg.innerText = message;
-      toast.classList.add('show');
-
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
-    }
-
-    // Troca de Abas
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        const moduleName = this.innerText.trim();
-        showToast(`Módulo alterado para: ${moduleName}`);
-      });
-    });
 </script>
 </body>
 </html>
