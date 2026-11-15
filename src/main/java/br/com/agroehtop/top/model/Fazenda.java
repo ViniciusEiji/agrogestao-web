@@ -39,8 +39,8 @@ public class Fazenda {
     @OneToMany(mappedBy = "fazenda", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Maquina> maquinas = new ArrayList<>();
 
-    protected Fazenda() {
-        // Construtor exigido pelo JPA.
+    public Fazenda() {
+        // Construtor padrão exigido pelo JPA e Spring MVC.
     }
 
     public Fazenda(String nome, BigDecimal areaHectares, String municipio, String uf) {

@@ -31,8 +31,8 @@ public class Maquina {
     @OneToMany(mappedBy = "maquina", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Manutencao> manutencoes = new ArrayList<>();
 
-    protected Maquina() {
-        // Construtor exigido pelo JPA.
+    public Maquina() {
+        // Construtor padrão exigido pelo JPA e Spring MVC.
     }
 
     public Maquina(String tipo, Integer anoFabricacao, double horasUso) {

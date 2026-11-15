@@ -30,8 +30,8 @@ public class Venda {
     @Column(name = "preco_unitario", nullable = false, precision = 14, scale = 2)
     private BigDecimal precoUnitario;
 
-    protected Venda() {
-        // Construtor exigido pelo JPA.
+    public Venda() {
+        // Construtor padrão exigido pelo JPA e Spring MVC / formulários.
     }
 
     public Venda(Safra safra, Cliente cliente, LocalDate data,
