@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,12 +26,20 @@
             </div>
         </a>
 
-        <div class="user-profile">
-            <div class="avatar">GA</div>
-            <div class="user-info">
-                <div class="user-name">Gestor Agrícola</div>
-                <div class="user-role">Fazenda Vista Alegre</div>
+        <div class="user-profile" style="display: flex; align-items: center; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="avatar" sec:authentication="name" style="text-transform: uppercase;">U</div>
+                <div class="user-info">
+                    <div class="user-name" sec:authentication="name">Usuário</div>
+                    <div class="user-role" sec:authorize="hasRole('ADMIN')">Administrador</div>
+                    <div class="user-role" sec:authorize="hasRole('OPERADOR')">Operador</div>
+                </div>
             </div>
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <button type="submit" class="btn btn-outline btn-sm" title="Sair do Sistema" style="padding: 0.4rem 0.75rem; color: #a83232; border-color: #a83232;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+                </button>
+            </form>
         </div>
     </div>
 
@@ -177,7 +185,7 @@
                                     <a th:href="@{/fazendas/editar/{id}(id=${f.id})}" class="btn btn-outline btn-sm btn-icon" title="Editar">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
-                                    <form th:action="@{/fazendas/excluir/{id}(id=${f.id})}" method="post" style="display: inline;" onsubmit="return confirm('Deseja excluir esta fazenda?');">
+                                    <form sec:authorize="hasRole('ADMIN')" th:action="@{/fazendas/excluir/{id}(id=${f.id})}" method="post" style="display: inline;" onsubmit="return confirm('Deseja excluir esta fazenda?');">
                                         <button type="submit" class="btn btn-outline btn-sm btn-icon" style="color: #a83232; border-color: #a83232;" title="Excluir">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>

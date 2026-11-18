@@ -5,6 +5,7 @@ import br.com.agroehtop.top.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,9 +20,28 @@ public class CargaInicialDadosConfig {
             SafraRepository safraRepo,
             MaquinaRepository maquinaRepo,
             ClienteRepository clienteRepo,
-            VendaRepository vendaRepo) {
+            VendaRepository vendaRepo,
+            UsuarioRepository usuarioRepo,
+            PasswordEncoder passwordEncoder) {
 
         return args -> {
+            // Carga de Usuários e Perfis de Acesso (Spring Security)
+            if (usuarioRepo.count() == 0) {
+                usuarioRepo.save(new Usuario(
+                        "Administrador do Sistema",
+                        "admin",
+                        passwordEncoder.encode("admin123"),
+                        PerfilUsuario.ROLE_ADMIN
+                ));
+
+                usuarioRepo.save(new Usuario(
+                        "Operador de Campo",
+                        "operador",
+                        passwordEncoder.encode("operador123"),
+                        PerfilUsuario.ROLE_OPERADOR
+                ));
+            }
+
             if (fazendaRepo.count() == 0) {
                 Fazenda f1 = fazendaRepo.save(new Fazenda("Fazenda Vista Alegre", new BigDecimal("1200.00"), "Uberaba", "MG"));
                 Fazenda f2 = fazendaRepo.save(new Fazenda("Fazenda Santa Luzia", new BigDecimal("850.00"), "Ribeirão Preto", "SP"));
