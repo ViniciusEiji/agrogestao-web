@@ -2,88 +2,58 @@ RELATÓRIO TÉCNICO SUCINTO
 PROJETO INTEGRADOR FULL STACK - MODERNIZAÇÃO DE SISTEMA LEGADO
 ESEG | ENGENHARIA DE COMPUTAÇÃO | PROGRAMAÇÃO WEB - 2º SEMESTRE DE 2026
 
-PROJETO: AgroGestão Web - Modernização de Sistema Agropecuário
+PROJETO: AgroGestão Web - Sistema Integrado de Gestão Agropecuária
+
 
 1. PROBLEMAS IDENTIFICADOS NA IMPLEMENTAÇÃO OU NA ESTRUTURA LEGADA
 
 1.1. Inconsistência e Ausência de Regras de Transição de Status
-O sistema legado armazenava os status das safras e ciclos produtivos como texto livre no banco de dados. Isso permitia estados contraditórios e inconsistentes, tais como: safras marcadas como concluídas sem que houvesse data de colheita ou produtividade registrada; safras com datas de colheita anteriores à data de plantio; e a possibilidade de reabertura indevida de safras já finalizadas ou canceladas.
+Status em texto livre permitiam transições ilógicas, safras concluídas sem colheita e datas de colheita anteriores ao plantio.
 
 1.2. Falta de Autenticação e Controle de Acesso no Servidor
-A aplicação legada não possuía camada de segurança. Qualquer usuário com acesso à rede conseguia disparar requisições para criar, alterar ou excluir registros. Além disso, não existia distinção de papéis ou perfis, gerando risco severo de exclusão acidental ou não autorizada de dados críticos de produção e comercialização.
+Inexistência de login ou perfis de usuário, expondo operações críticas de exclusão a qualquer requisição não autorizada.
 
 1.3. Fragilidade na Integridade Referencial e Modelagem Objeto-Relacional
-A base original continha chaves estrangeiras sem restrições de integridade e mapeamentos frágeis. Não havia controle de integridade em cascata nem validação contra exclusão de registros pai associados a registros filhos (por exemplo, a exclusão de uma fazenda que ainda possuía safras e maquinários vinculados).
+Relacionamentos sem integridade referencial, permitindo a exclusão de entidades com registros dependentes associados.
 
 1.4. Apresentação Estática e Ausência de Persistência Dinâmica
-O protótipo visual anterior dependia de manipulações pontuais no navegador via scripts locais, gerando dados fictícios em memória que se perdiam ao recarregar a página (F5), desatendendo a exigência de renderização dinâmica no servidor e persistência real.
+Interface com dados mockados em JavaScript que eram reiniciados a cada atualização de página, sem persistência real.
 
---------------------------------------------------------------------------------
 
 2. SOLUÇÕES ADOTADAS E RESPECTIVAS JUSTIFICATIVAS
 
 2.1. Implementação de Enum com Máquina de Estados Finita (StatusSafra)
-- Solução: Criação do tipo enumerado StatusSafra (PLANEJADA, EM_ANDAMENTO, CONCLUIDA, CANCELADA) associado a um método estrito de validação de transição (podeTransitarPara) e anotação @Enumerated(EnumType.STRING).
-- Justificativa: Garante que safras concluídas ou canceladas sejam tratadas como estados finais imutáveis, eliminando estados inconsistentes no ciclo de vida da safra e atendendo ao item de validação de transições do edital.
+Criação do enum StatusSafra para validar transições legítimas e impedir alterações em estados terminais como concluída e cancelada.
 
 2.2. Camada de Segurança com Spring Security e Controle em Nível de Servidor
-- Solução: Configuração do Spring Security com criptografia de senhas através do algoritmo BCrypt. Criação da entidade Usuario e do enum PerfilUsuario, estabelecendo dois perfis distintos: Administrador (ROLE_ADMIN) e Operador (ROLE_OPERADOR). Proteção direta nas rotas HTTP do servidor (restrição de /*/excluir/** apenas para ROLE_ADMIN).
-- Justificativa: Atende à determinação de que a segurança não deve ser apenas cosmética na interface, mas sim imposta pelo servidor. O operador consegue cadastrar e operar o sistema, mas não tem permissão para excluir registros, mitigando riscos de perda acidental de dados.
+Autenticação com BCrypt e perfis ADMIN e OPERADOR, bloqueando exclusões no backend para usuários sem perfil de administrador.
 
 2.3. Validações de Domínio e Camada de Serviço Centralizada
-- Solução: Implementação do SafraService encapsulando regras de negócio e validações temporais (data de colheita não pode ser anterior ao plantio) e exigências de integridade (safra concluída exige produtividade positiva e data de colheita). Utilização de Bean Validation (Jakarta Validation) nas entidades.
-- Justificativa: Desacopla a regra de negócio dos controladores HTTP, permitindo reutilização, manutenibilidade e facilidade de testes unitários automatizados.
+Regras centralizadas no SafraService e Bean Validation para garantir coerência temporal e dados mínimos em safras concluídas.
 
 2.4. Integração Completa com Thymeleaf e Persistência H2
-- Solução: Desenvolvimento de controladores Spring MVC (@Controller) que alimentam modelos (Model) e renderizam templates HTML responsivos via Thymeleaf. O banco de dados foi configurado em modo arquivo local persistente (database/agronegocio), com schema isolado.
-- Justificativa: Cumpre a exigência obrigatória do edital de uso exclusivo do Thymeleaf como motor de renderização dinâmico, fornecendo persistência real e cálculo de indicadores (KPIs) diretamente dos registros gravados no banco relacional.
+Controladores Spring MVC com Thymeleaf e H2 persistente, garantindo renderização dinâmica no servidor e dados duradouros.
 
---------------------------------------------------------------------------------
 
 3. TESTES REALIZADOS E RESULTADOS OBTIDOS
 
 3.1. Testes Unitários de Regras de Negócio e Casos-Limite (SafraServiceTest)
-- Cenário: Cadastro de safra válida com todos os campos consistentes.
-  Resultado: Sucesso. O registro foi processado e persistido com status correto.
-- Cenário: Tentativa de cadastro de safra com área plantada igual a zero ou negativa.
-  Resultado: Sucesso no bloqueio. Disparo de RegraNegocioException com mensagem clara e recusa de salvamento.
-- Cenário: Tentativa de inserção com data de colheita anterior à data de plantio.
-  Resultado: Sucesso no bloqueio. Disparo de RegraNegocioException impedindo a inconsistência temporal.
-- Cenário: Tentativa de marcar safra como CONCLUIDA sem preencher data de colheita ou com produtividade zerada.
-  Resultado: Sucesso no bloqueio. Disparo de RegraNegocioException exigindo dados finais válidos.
-- Cenário: Transições de status válidas (PLANEJADA para EM_ANDAMENTO; EM_ANDAMENTO para CONCLUIDA).
-  Resultado: Sucesso na alteração e atualização correta do registro no banco.
-- Cenário: Transições de status inválidas (tentativa de reverter safra CONCLUIDA para EM_ANDAMENTO, ou alterar safra CANCELADA para PLANEJADA).
-  Resultado: Sucesso no bloqueio. Disparo de RegraNegocioException impedindo a violação da máquina de estados.
+Testes validaram salvamento correto e bloquearam com sucesso áreas zeradas, datas inconsistentes e transições de status inválidas.
 
 3.2. Testes de Unidade de Entidades e Cálculos Financeiros (VendaTest)
-- Cenário: Cálculo do valor total da venda a partir da quantidade comercializada e do preço unitário.
-  Resultado: Sucesso. Cálculo correto com arredondamento em escala monetária de duas casas decimais.
-- Cenário: Cálculo do valor total na presença de valores nulos.
-  Resultado: Sucesso. Retorno seguro de BigDecimal.ZERO, evitando NullPointerException.
+Validação do cálculo monetário de vendas com duas casas decimais e retorno seguro de zero para campos nulos.
 
 3.3. Testes de Integração e Autorização de Acesso (Spring Security)
-- Cenário: Acesso não autenticado a qualquer rota do sistema.
-  Resultado: Sucesso. Redirecionamento automático e obrigatório para /login.
-- Cenário: Autenticação com perfil Operador e tentativa de disparo de exclusão de safra ou fazenda.
-  Resultado: Sucesso no bloqueio. O servidor barrou a operação retornando código HTTP 403 Forbidden.
-- Cenário: Autenticação com perfil Administrador e execução de exclusão.
-  Resultado: Sucesso. Exclusão efetuada com integridade no banco relacional.
+Redirecionamento automático para login e bloqueio HTTP 403 para operadores tentando executar exclusões no servidor.
 
---------------------------------------------------------------------------------
 
 4. LIMITAÇÕES CONHECIDAS, RISCOS RESIDUAIS E POSSÍVEIS MELHORIAS FUTURAS
 
 4.1. Limitações Conhecidas
-- O sistema atual utiliza o banco relacional H2 persistido em arquivo local, o que atende perfeitamente aos requisitos de teste, avaliação e reprodutibilidade individual, porém limita a escalabilidade concorrente massiva quando comparado a um SGBD cliente/servidor como PostgreSQL ou MySQL.
-- Os módulos complementares de Pecuária e Clima, embora previstos conceitualmente no domínio ampliado, operam de forma estática, mantendo-se o foco do CRUD completo nas entidades produtivas e comerciais centrais (Safras, Fazendas, Maquinários, Vendas e Clientes).
+Banco H2 em arquivo atende à avaliação acadêmica mas limita concorrência, enquanto Pecuária e Clima mantêm escopo inicial.
 
 4.2. Riscos Residuais
-- Em casos de desligamento abrupto da máquina hospedeira durante escrita pesada no arquivo local do H2, existe risco residual de lock no arquivo de banco (.lock), exigindo liberação manual.
-- Senhas iniciais de demonstração (admin123 e operador123) foram carregadas para fins de avaliação acadêmica, devendo ser substituídas em ambiente de produção.
+Risco residual de bloqueio de arquivo em quedas abruptas do H2 e necessidade de trocar credenciais padrão em produção.
 
 4.3. Possíveis Melhorias Futuras
-- Migração transparente do dialeto JPA de H2 para PostgreSQL via profiles do Spring Boot (application-prod.properties).
-- Implementação de funcionalidade de recuperação de senha por e-mail e cadastro público de auto-atendimento de usuários.
-- Implementação de auditoria automática em nível de banco de dados (Spring Data Envers / @CreatedDate, @LastModifiedBy) para rastreabilidade de quem realizou cada transição de status ou alteração de venda.
-- Geração e exportação de relatórios gerenciais e de colheita em formato PDF e planilhas eletrônicas.
+Migração do banco para PostgreSQL, auditoria automática de transações via Envers e exportação de relatórios em PDF.
