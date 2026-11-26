@@ -96,10 +96,5 @@ Para rodar todos os testes automatizados via terminal:
 Ou no IntelliJ: clique com o botão direito na pasta `src/test/java` e selecione **Run 'All Tests'**.
 
 ---
-
-## 7. Roteiro para Defesa Técnica Individual (Arguição Oral)
-
-Para a apresentação prática diante do docente (item 7 do edital):
-- **Demonstrar bloqueio de status inválido:** Tente alterar uma safra de `CONCLUIDA` para `EM_ANDAMENTO` ou salvar uma safra `CONCLUIDA` sem data de colheita/produtividade. A exceção `RegraNegocioException` é lançada e tratada com feedback na interface.
-- **Explicar associação JPA e Lado Proprietário:** A relação `Fazenda` $\leftrightarrow$ `Safra` possui o lado proprietário em `Safra` (onde reside a chave estrangeira `@JoinColumn(name = "fazenda_id")`), enquanto `Fazenda` possui o lado inverso (`mappedBy = "fazenda"` com `orphanRemoval = true`).
+estrangeira `@JoinColumn(name = "fazenda_id")`), enquanto `Fazenda` possui o lado inverso (`mappedBy = "fazenda"` com `orphanRemoval = true`).
 - **Demonstrar segurança entre perfis:** Efetue login como `operador` e mostre que os botões de exclusão desaparecem e requisições diretas de exclusão são barradas pelo servidor; depois faça login como `admin` e demonstre a exclusão funcional.
